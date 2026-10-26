@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İnam və Himayə — Onlayn Məsləhət Alt Sistemi</title>
+<style>
+  :root{
+    --bg:#f4f7fb; --card:#fff; --ink:#1d2b3a; --muted:#5f6f82;
+    --brand:#1f6feb; --brand-dark:#154fb0; --ok:#1a7f4b; --warn:#b36b00; --danger:#c62828;
+    --line:#dbe3ee; --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  header{background:linear-gradient(135deg,#154fb0,#1f6feb);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+  header h1{margin:0;font-size:1.3rem}
+  header small{opacity:.85}
+  .badge{background:rgba(255,255,255,.18);padding:4px 12px;border-radius:999px;font-size:.85rem}
+  .layout{display:flex;min-height:calc(100vh - 70px)}
+  nav{width:240px;background:#fff;border-right:1px solid var(--line);padding:14px 10px;flex-shrink:0}
+  nav button{display:block;width:100%;text-align:left;padding:10px 14px;margin-bottom:4px;border:0;background:none;border-radius:8px;font-size:.95rem;cursor:pointer;color:var(--ink)}
+  nav button:hover{background:#eef3fb}
+  nav button.active{background:var(--brand);color:#fff}
+  nav button:disabled{opacity:.4;cursor:not-allowed}
+  main{flex:1;padding:24px;max-width:1100px}
+  section{display:none}
+  section.active{display:block}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:20px}
+  .card h2{margin-top:0;font-size:1.15rem}
+  .toolbar{display:flex;gap:8px;justify-content:flex-end;margin-bottom:12px}
+  .toolbar.bottom{margin:12px 0 0}
+  button.btn{padding:8px 16px;border-radius:8px;border:1px solid var(--brand);background:var(--brand);color:#fff;cursor:pointer;font-size:.9rem}
+  button.btn:hover{background:var(--brand-dark)}
+  button.btn.ghost{background:#fff;color:var(--brand)}
+  button.btn.danger{background:var(--danger);border-color:var(--danger)}
+  button.btn:disabled{opacity:.45;cursor:not-allowed}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px}
+  input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+  input:read-only,textarea:read-only{background:#f1f4f8}
+  textarea{min-height:90px;resize:vertical}
+  .notice{padding:10px 14px;border-radius:8px;font-size:.9rem;margin:10px 0}
+  .notice.info{background:#e8f1ff;color:#154fb0}
+  .notice.warn{background:#fff4e0;color:var(--warn)}
+  .notice.ok{background:#e6f6ee;color:var(--ok)}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+  th{background:#f1f5fb}
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tabs button{padding:8px 16px;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer}
+  .tabs button.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .pane{display:none}.pane.active{display:block}
+  video{width:100%;background:#0d1520;border-radius:10px;aspect-ratio:16/9}
+  .video-wrap{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+  @media(max-width:800px){.layout{flex-direction:column}nav{width:100%;display:flex;flex-wrap:wrap;gap:4px}nav button{width:auto}.video-wrap{grid-template-columns:1fr}}
+  .chat-box{height:280px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fafcff;margin-bottom:10px}
+  .msg{max-width:75%;padding:8px 12px;border-radius:12px;margin-bottom:8px;font-size:.92rem}
+  .msg.me{background:var(--brand);color:#fff;margin-left:auto}
+  .msg.other{background:#e9eef6}
+  .msg small{display:block;opacity:.7;font-size:.72rem}
+  .row{display:flex;gap:8px}
+  .dial{max-width:300px;margin:auto;text-align:center}
+  .dial input{text-align:center;font-size:1.3rem;margin-bottom:10px}
+  .dial-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+  .dial-pad button{padding:14px;font-size:1.1rem;border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer}
+  .result{padding:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .score{font-weight:700;font-size:1.1rem}
+  .bar{height:8px;background:#e5ebf4;border-radius:99px;overflow:hidden;margin-top:6px;width:200px}
+  .bar span{display:block;height:100%;background:var(--ok)}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;padding:20px}
+
+  @media print{
+    header,nav,.toolbar,footer,.tabs,.no-print{display:none!important}
+    body{background:#fff}
+    .layout{display:block}
+    main{padding:0;max-width:none}
+    section{display:none!important}
+    section.print-target{display:block!important}
+    .card{border:1px solid #999;break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🛡️ “İnam və Himayə” Rəqəmsal Mərkəzi</h1>
+    <small>Valideyn himayəsindən məhrum olmuş uşaqlar üçün Onlayn Məsləhət Alt Sistemi (məxfi)</small>
+  </div>
+  <span class="badge" id="roleBadge">Daxil olunmayıb</span>
+</header>
+
+<div class="layout">
+  <nav id="nav">
+    <button data-target="login" class="active">1. Giriş və rollar</button>
+    <button data-target="about">2. Sistem haqqında</button>
+    <button data-target="register" class="needs-auth" disabled>3. Müraciətçi qeydiyyatı</button>
+    <button data-target="comm" class="needs-auth" disabled>4. Onlayn əlaqə</button>
+    <button data-target="assess" class="needs-auth" disabled>5. Ehtiyacların qiymətləndirilməsi</button>
+    <button data-target="placement" class="needs-auth" disabled>6. Yerləşdirmə uyğunluğu</button>
+  </nav>
+
+  <main>
+
+    <!-- 1. GİRİŞ -->
+    <section id="login" class="active">
+      <div class="card">
+        <h2>Giriş və istifadəçi icazələri</h2>
+        <p>Hər kateqoriya üçün fərdi giriş hüquqları təmin edilir.</p>
+        <div class="grid">
+          <div><label>İstifadəçi adı</label><input id="username" placeholder="istifadəçi adı"></div>
+          <div><label>Şifrə</label><input id="password" type="password" placeholder="••••••••"></div>
+          <div>
+            <label>Rol</label>
+            <select id="role">
+              <option value="social">Sosial işçi</option>
+              <option value="psych">Psixoloq</option>
+              <option value="teacher">Pedaqoq</option>
+              <option value="specialist">Digər mütəxəssis</option>
+              <option value="beneficiary">Benefisiar (uşaq / nümayəndə)</option>
+            </select>
+          </div>
+        </div>
+        <div class="notice info">İstifadəçi doğrulaması SİMA və ya digər rəqəmsal imza vasitələri ilə həyata keçirilməlidir (serverdə inteqrasiya olunacaq).</div>
+        <button class="btn" id="loginBtn">Daxil ol</button>
+        <div class="notice warn">⚠️ Bu, nümayiş (demo) versiyasıdır — həqiqi autentifikasiya və verilənlər bazası yoxdur. Bütün məlumatlar yalnız brauzerin yaddaşında saxlanılır və səhifə yenilənəndə silinir.</div>
+      </div>
+
+      <div class="card">
+        <h2>Rolların giriş hüquqları</h2>
+        <table>
+          <tr><th>Rol</th><th>Qeydiyyat</th><th>Əlaqə</th><th>Qiymətləndirmə</th><th>Yerləşdirmə</th></tr>
+          <tr><td>Sosial işçi</td><td>✔ redaktə</td><td>✔</td><td>✔ redaktə</td><td>✔</td></tr>
+          <tr><td>Psixoloq</td><td>👁 baxış</td><td>✔</td><td>✔ redaktə</td><td>✔</td></tr>
+          <tr><td>Pedaqoq</td><td>👁 baxış</td><td>✔</td><td>👁 baxış</td><td>—</td></tr>
+          <tr><td>Digər mütəxəssis</td><td>👁 baxış</td><td>✔</td><td>👁 baxış</td><td>—</td></tr>
+          <tr><td>Benefisiar</td><td>👁 yalnız özünə aid</td><td>✔</td><td>—</td><td>—</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. HAQQINDA -->
+    <section id="about">
+      <div class="card">
+        <div class="toolbar"><button class="btn ghost" data-print="about">🖨 Çap et</button></div>
+        <h2>Sistem haqqında ümumi məlumat və prinsiplər</h2>
+        <p><b>Məqsəd:</b> Valideyn himayəsindən məhrum olmuş uşaqlara operativ, təhlükəsiz və peşəkar onlayn dəstək, hüquqi və psixoloji məsləhət xidmətlərinin göstərilməsi.</p>
+        <p><b>Məxfilik siyasəti:</b> Uşaqların fərdi məlumatları “Fərdi məlumatlar haqqında” qanunvericiliyə uyğun olaraq ən yüksək səviyyədə qorunur.</p>
+        <p><b>Əsas prinsiplər:</b> təhlükəsizlik, əlçatanlıq, konfidensiallıq, operativlik və etik davranış qaydalarına riayət.</p>
+      </div>
+      <div class="card">
+        <h2>Uşağın və təmsilçinin hüquq və vəzifələri</h2>
+        <ul>
+          <li>Məlumatlandırılmış razılıq vermək və ya geri götürmək hüququ.</li>
+          <li>Fərdi məlumatların məxfiliyinin qorunması hüququ.</li>
+          <li>Peşəkar psixoloji və hüquqi dəstək almaq hüququ.</li>
+          <li>Düzgün məlumat təqdim etmək və seans qaydalarına riayət etmək vəzifəsi.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3. QEYDİYYAT -->
+    <section id="register">
+      <div class="card" id="registerCard">
+        <div class="toolbar">
+          <button class="btn ghost" data-edit="registerForm">✏️ Redaktə et</button>
+          <button class="btn ghost" data-print="register">🖨 Çap et</button>
+        </div>
+        <h2>Müraciətçi qeydiyyatı modulu</h2>
+        <form id="registerForm">
+          <h3>Şəxsi məlumatlar</h3>
+          <div class="grid">
+            <div><label>Ad</label><input name="ad" required></div>
+            <div><label>Soyad</label><input name="soyad" required></div>
+            <div><label>Ata adı</label><input name="ata"></div>
+            <div><label>Doğum tarixi</label><input type="date" name="dogum" required></div>
+            <div><label>Gender</label>
+              <select name="gender"><option value="">Seçin</option><option>Qız</option><option>Oğlan</option></select></div>
+            <div><label>Şəxsiyyəti təsdiq edən sənəd (seriya/nömrə)</label><input name="sened"></div>
+          </div>
+          <h3>Müəssisə və ünvan</h3>
+          <div class="grid">
+            <div><label>Müəssisənin tipi</label>
+              <select name="muessise">
+                <option value="">Seçin</option><option>Uşaq evi</option><option>İnternat məktəbi</option>
+                <option>Sığınacaq</option><option>Digər</option>
+              </select></div>
+            <div><label>Yaşayış ünvanı</label><input name="yasayis"></div>
+            <div><label>Təmas ünvanı</label><input name="temas"></div>
+          </div>
+          <h3>Valideyn məlumatları</h3>
+          <div class="grid">
+            <div><label>Himayədən məhrum olma səbəbi</label>
+              <select name="sebeb">
+                <option value="">Seçin</option><option>Valideynlərin vəfatı</option>
+                <option>Valideyn himayəsinin itirilməsi (məhkəmə qərarı)</option>
+                <option>Valideynlərin naməlum olması</option><option>Digər</option>
+              </select></div>
+            <div><label>Status</label>
+              <select name="status"><option value="">Seçin</option><option>Tam yetim</option><option>Yarımyetim</option><option>Himayəsiz</option></select></div>
+          </div>
+          <h3>Əlaqə vasitələri</h3>
+          <div class="grid">
+            <div><label>Telefon</label><input type="tel" name="telefon"></div>
+            <div><label>E-poçt</label><input type="email" name="email"></div>
+          </div>
+          <div class="toolbar bottom no-print">
+            <button type="submit" class="btn">Qeydiyyata al</button>
+          </div>
+        </form>
+        <div id="registerMsg"></div>
+      </div>
+
+      <div class="card">
+        <h2>Qeydiyyatdan keçmiş müraciətçilər</h2>
+        <table id="applicantsTable">
+          <thead><tr><th>№</th><th>Ad Soyad</th><th>Yaş</th><th>Müəssisə</th><th>Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. ƏLAQƏ -->
+    <section id="comm">
+      <div class="card">
+        <h2>Onlayn əlaqə bölmələri</h2>
+        <div class="tabs" id="commTabs">
+          <button class="active" data-pane="paneVideo">📹 Video-zəng</button>
+          <button data-pane="paneChat">💬 Canlı çat</button>
+          <button data-pane="paneVoice">📞 Səsli əlaqə</button>
+        </div>
+
+        <div class="card" style="background:#fafcff">
+          <label style="display:flex;gap:8px;align-items:flex-start;color:var(--ink)">
+            <input type="checkbox" id="consent" style="width:auto;margin-top:4px">
+            <span>Qanuni nümayəndənin və ya səlahiyyətli qurumun <b>qeydə alma (arxivləşdirmə) razılığı</b> mövcuddur.
+              Razılıq verilmədikdə qeydiyyat funksiyası bloklanır.</span>
+          </label>
+        </div>
+
+        <!-- VIDEO -->
+        <div class="pane active" id="paneVideo">
+          <div class="video-wrap">
+            <div>
+              <video id="localVideo" autoplay muted playsinline></video>
+              <div class="row" style="margin-top:10px">
+                <button class="btn" id="startCam">Kameranı aç</button>
+                <button class="btn ghost" id="stopCam" disabled>Bağla</button>
+                <button class="btn danger" id="recBtn" disabled>⏺ Qeydə al</button>
+              </div>
+              <div class="notice info">🔒 Real sistemdə əlaqə end-to-end şifrələmə (məs. WebRTC + E2EE) ilə qurulmalıdır. Burada yalnız yerli kamera önbaxışı göstərilir.</div>
+            </div>
+            <div>
+              <label>Canlı qeyd və avto-transkripsiya (mütəxəssis paneli)</label>
+              <textarea id="transcript" style="min-height:230px" placeholder="Seans qeydləri..."></textarea>
+              <div class="row" style="margin-top:8px">
+                <button class="btn ghost" id="dictate">🎙 Diktə (transkripsiya)</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHAT -->
+        <div class="pane" id="paneChat">
+          <div class="chat-box" id="chatBox"></div>
+          <div class="row">
+            <input id="chatInput" placeholder="Mesaj yazın...">
+            <button class="btn" id="chatSend">Göndər</button>
+          </div>
+          <div class="row" style="margin-top:10px;flex-wrap:wrap">
+            <input type="file" id="chatFile" style="max-width:300px">
+            <button class="btn ghost" id="chatFileSend">📎 Fayl / sənəd / test göndər</button>
+            <button class="btn ghost" id="chatArchive">📁 İş qovluğuna kopyala</button>
+          </div>
+          <div id="archiveInfo"></div>
+        </div>
+
+        <!-- VOICE -->
+        <div class="pane" id="paneVoice">
+          <div class="dial">
+            <input id="dialNumber" placeholder="Nömrə / anonim xətt" readonly>
+            <div class="dial-pad" id="dialPad"></div>
+            <div class="row">
+              <button class="btn" id="callBtn" style="flex:1">📞 Zəng et</button>
+              <button class="btn ghost" id="clearDial">⌫</button>
+            </div>
+            <div id="callStatus" class="notice info" style="margin-top:10px">Zəng gözlənilir. Anonim / məxfilik qorunan zənglər dəstəklənir.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. QİYMƏTLƏNDİRMƏ -->
+    <section id="assess">
+      <div class="card">
+        <div class="toolbar">
+          <button class="btn ghost" data-edit="assessForm">✏️ Redaktə et</button>
+          <button class="btn ghost" data-print="assess">🖨 Çap et</button>
+        </div>
+        <h2>Ehtiyacların qiymətləndirilməsi</h2>
+        <form id="assessForm">
+          <div class="grid">
+            <div><label>Uşağın yaşı</label><input type="number" min="0" max="18" name="yas" id="aYas"></div>
+            <div><label>Sağlamlıq vəziyyəti</label>
+              <select name="saglam" id="aSaglam">
+                <option value="norm">Ümumi sağlam</option>
+                <option value="xroniki">Xroniki xəstəlik</option>
+                <option value="mehdud">Məhdud imkanlı</option>
+              </select></div>
+            <div><label>Psixoloji dəstək ehtiyacı</label>
+              <select id="aPsix"><option value="1">Aşağı</option><option value="2">Orta</option><option value="3">Yüksək</option></select></div>
+            <div><label>Sosial dəstək ehtiyacı</label>
+              <select id="aSosial"><option value="1">Aşağı</option><option value="2">Orta</option><option value="3">Yüksək</option></select></div>
+          </div>
+          <div style="margin-top:14px"><label>Mütəxəssisin qiymətləndirmə qeydləri</label>
+            <textarea name="qeyd" placeholder="Psixoloji və sosial vəziyyətin təsviri..."></textarea></div>
+        </form>
+        <div class="notice info">Bu məlumatlar “Yerləşdirmə uyğunluğu” modulunda istifadə olunur.</div>
+      </div>
+    </section>
+
+    <!-- 6. YERLƏŞDİRMƏ -->
+    <section id="placement">
+      <div class="card">
+        <div class="toolbar">
+          <button class="btn ghost" data-edit="placementForm">✏️ Redaktə et</button>
+          <button class="btn ghost" data-print="placement">🖨 Çap et</button>
+        </div>
+        <h2>Müəssisəyə yerləşdirmə üçün uyğunluq yoxlanışı</h2>
+        <p>Uşağın yaşı, sağlamlıq vəziyyəti, psixoloji və sosial ehtiyacları əsasında ən uyğun müəssisə təklif olunur. Nəticə yalnız <b>mütəxəssisə dəstək</b> məqsədi daşıyır, yekun qərarı mütəxəssis verir.</p>
+        <form id="placementForm" onsubmit="return false">
+          <button class="btn" id="runPlacement" type="button">Uyğunluğu yoxla</button>
+        </form>
+        <div id="placementResults" style="margin-top:16px"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>© “İnam və Himayə” Rəqəmsal Mərkəzi — nümayiş prototipi. Real şəxsi məlumatları bu versiyada istifadə etməyin.</footer>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const roleNames = {social:'Sosial işçi',psych:'Psixoloq',teacher:'Pedaqoq',specialist:'Mütəxəssis',beneficiary:'Benefisiar'};
+  let currentRole = null;
+  const applicants = [];
+  const chatLog = [];
+
+  /* ---------- Naviqasiya ---------- */
+  function show(id){
+    $$('main > section').forEach(s => s.classList.toggle('active', s.id === id));
+    $$('#nav button').forEach(b => b.classList.toggle('active', b.dataset.target === id));
+  }
+  $$('#nav button').forEach(b => b.addEventListener('click', () => !b.disabled && show(b.dataset.target)));
+
+  /* ---------- Giriş ---------- */
+  $('#loginBtn').addEventListener('click', () => {
+    if(!$('#username').value.trim() || !$('#password').value){
+      alert('İstifadəçi adı və şifrəni daxil edin.'); return;
+    }
+    currentRole = $('#role').value;
+    $('#roleBadge').textContent = roleNames[currentRole];
+    $$('.needs-auth').forEach(b => b.disabled = false);
+    applyPermissions();
+    show(currentRole === 'beneficiary' ? 'comm' : 'register');
+  });
+
+  function applyPermissions(){
+    const canEditReg = currentRole === 'social';
+    const canEditAssess = ['social','psych'].includes(currentRole);
+    const canPlace = ['social','psych'].includes(currentRole);
+    const isBen = currentRole === 'beneficiary';
+    $$('#nav button[data-target="register"], #nav button[data-target="assess"]').forEach(b => b.disabled = isBen);
+    $('#nav button[data-target="placement"]').disabled = !canPlace;
+    setReadonly('#registerForm', !canEditReg);
+    setReadonly('#assessForm', !canEditAssess);
+    $$('[data-edit="registerForm"]').forEach(b => b.disabled = !canEditReg);
+    $$('[data-edit="assessForm"]').forEach(b => b.disabled = !canEditAssess);
+    $('#registerForm button[type=submit]').disabled = !canEditReg;
+  }
+  function setReadonly(sel, ro){
+    $$(sel + ' input, ' + sel + ' textarea').forEach(el => el.readOnly = ro);
+    $$(sel + ' select').forEach(el => el.disabled = ro);
+  }
+
+  /* ---------- Redaktə / Çap ---------- */
+  $$('[data-edit]').forEach(btn => btn.addEventListener('click', () => {
+    const sel = '#' + btn.dataset.edit;
+    const first = $(sel + ' input, ' + sel + ' textarea');
+    const makeEditable = first && first.readOnly;
+    setReadonly(sel, !makeEditable);
+    btn.textContent = makeEditable ? '🔒 Redaktəni bağla' : '✏️ Redaktə et';
+  }));
+  $$('[data-print]').forEach(btn => btn.addEventListener('click', () => {
+    const sec = $('#' + btn.dataset.print);
+    sec.classList.add('print-target');
+    window.print();
+    sec.classList.remove('print-target');
+  }));
+
+  /* ---------- Qeydiyyat ---------- */
+  function age(d){
+    const b = new Date(d), n = new Date();
+    let a = n.getFullYear() - b.getFullYear();
+    if(n < new Date(n.getFullYear(), b.getMonth(), b.getDate())) a--;
+    return a;
+  }
+  $('#registerForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target).entries());
+    if(!f.ad || !f.soyad || !f.dogum){ return; }
+    applicants.push({...f, yas: age(f.dogum)});
+    renderApplicants();
+    $('#aYas').value = age(f.dogum);
+    $('#registerMsg').innerHTML = '<div class="notice ok">Müraciət qeydiyyata alındı. Növbəti addım: SİMA ilə doğrulama və ehtiyacların qiymətləndirilməsi.</div>';
+    e.target.reset();
+  });
+  function renderApplicants(){
+    const tb = $('#applicantsTable tbody');
+    tb.innerHTML = '';
+    applicants.forEach((a,i) => {
+      const tr = document.createElement('tr');
+      [i+1, `${a.ad} ${a.soyad}${a.ata ? ' ' + a.ata : ''}`, a.yas, a.muessise || '—', a.status || '—']
+        .forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+      tb.appendChild(tr);
+    });
+  }
+
+  /* ---------- Əlaqə tabları ---------- */
+  $$('#commTabs button').forEach(b => b.addEventListener('click', () => {
+    $$('#commTabs button').forEach(x => x.classList.toggle('active', x === b));
+    $$('.pane').forEach(p => p.classList.toggle('active', p.id === b.dataset.pane));
+  }));
+
+  /* ---------- Video ---------- */
+  let stream = null, recorder = null, chunks = [];
+  const consent = () => $('#consent').checked;
+  $('#consent').addEventListener('change', () => {
+    $('#recBtn').disabled = !(consent() && stream);
+    if(!consent() && recorder && recorder.state === 'recording') recorder.stop();
+  });
+  $('#startCam').addEventListener('click', async () => {
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+      $('#localVideo').srcObject = stream;
+      $('#startCam').disabled = true; $('#stopCam').disabled = false;
+      $('#recBtn').disabled = !consent();
+    }catch(err){ alert('Kameraya giriş mümkün olmadı: ' + err.message); }
+  });
+  $('#stopCam').addEventListener('click', () => {
+    if(recorder && recorder.state === 'recording') recorder.stop();
+    stream && stream.getTracks().forEach(t => t.stop());
+    stream = null; $('#localVideo').srcObject = null;
+    $('#startCam').disabled = false; $('#stopCam').disabled = true; $('#recBtn').disabled = true;
+  });
+  $('#recBtn').addEventListener('click', () => {
+    if(!consent()){ alert('Razılıq verilmədiyi üçün qeyd bloklanıb.'); return; }
+    if(recorder && recorder.state === 'recording'){ recorder.stop(); return; }
+    chunks = [];
+    recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.onstop = () => {
+      $('#recBtn').textContent = '⏺ Qeydə al';
+      const url = URL.createObjectURL(new Blob(chunks, {type:'video/webm'}));
+      const a = document.createElement('a'); a.href = url; a.download = 'seans-qeydi.webm'; a.click();
+    };
+    recorder.start();
+    $('#recBtn').textContent = '⏹ Qeydi dayandır';
+  });
+  $('#dictate').addEventListener('click', () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ alert('Brauzeriniz avto-transkripsiyanı dəstəkləmir.'); return; }
+    const r = new SR(); r.lang = 'az-AZ'; r.continuous = true;
+    r.onresult = e => {
+      const t = e.results[e.results.length - 1][0].transcript;
+      $('#transcript').value += (e.results[e.results.length - 1].isFinal ? t + '\n' : '');
+    };
+    r.start();
+    $('#dictate').textContent = '🎙 Dinlənir...';
+  });
+
+  /* ---------- Çat ---------- */
+  function addMsg(text, who){
+    const t = new Date().toLocaleTimeString('az-AZ',{hour:'2-digit',minute:'2-digit'});
+    chatLog.push({who, text, time:t});
+    const d = document.createElement('div');
+    d.className = 'msg ' + (who === 'me' ? 'me' : 'other');
+    const s = document.createElement('small'); s.textContent = (who === 'me' ? roleNames[currentRole] : 'Qarşı tərəf') + ' • ' + t;
+    const p = document.createElement('span'); p.textContent = text;
+    d.append(s, p);
+    $('#chatBox').appendChild(d);
+    $('#chatBox').scrollTop = 1e9;
+  }
+  $('#chatSend').addEventListener('click', () => {
+    const v = $('#chatInput').value.trim();
+    if(v){ addMsg(v,'me'); $('#chatInput').value = ''; }
+  });
+  $('#chatInput').addEventListener('keydown', e => { if(e.key === 'Enter') $('#chatSend').click(); });
+  $('#chatFileSend').addEventListener('click', () => {
+    const f = $('#chatFile').files[0];
+    if(f){ addMsg('📎 Fayl göndərildi: ' + f.name, 'me'); $('#chatFile').value = ''; }
+  });
+  $('#chatArchive').addEventListener('click', () => {
+    if(!consent()){ alert('Çat tarixçəsinin arxivləşdirilməsi üçün razılıq tələb olunur.'); return; }
+    const rows = chatLog.map(m => `${m.time} | ${m.who === 'me' ? 'Mütəxəssis' : 'Qarşı tərəf'} | ${m.text}`).join('\n');
+    const blob = new Blob(['Çat tarixçəsi (uşağın iş qovluğu)\n\n' + rows], {type:'text/plain;charset=utf-8'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chat-tarixcesi.txt'; a.click();
+    $('#archiveInfo').innerHTML = '<div class="notice ok">Çat tarixçəsi strukturlaşdırılaraq iş qovluğuna kopyalandı (demo: fayl kimi yükləndi).</div>';
+  });
+
+  /* ---------- Səsli əlaqə ---------- */
+  '123456789*0#'.split('').forEach(k => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = k;
+    b.addEventListener('click', () => $('#dialNumber').value += k);
+    $('#dialPad').appendChild(b);
+  });
+  $('#clearDial').addEventListener('click', () => { $('#dialNumber').value = $('#dialNumber').value.slice(0,-1); });
+  let calling = false;
+  $('#callBtn').addEventListener('click', () => {
+    calling = !calling;
+    $('#callBtn').textContent = calling ? '📵 Zəngi bitir' : '📞 Zəng et';
+    $('#callStatus').textContent = calling ? 'Zəng qurulur... (demo — real IP-telefoniya serverdə qurulmalıdır)' : 'Zəng bitdi.';
+  });
+
+  /* ---------- Yerləşdirmə uyğunluğu ---------- */
+  const institutions = [
+    {ad:'Uşaq evi “Ümid”', minYas:3, maxYas:10, saglam:['norm'], psix:2, sosial:2},
+    {ad:'İnternat məktəbi “Bilik”', minYas:7, maxYas:18, saglam:['norm','xroniki'], psix:2, sosial:2},
+    {ad:'Reabilitasiya mərkəzi “Dayaq”', minYas:3, maxYas:18, saglam:['xroniki','mehdud'], psix:3, sosial:3},
+    {ad:'Müvəqqəti sığınacaq “Qucaq”', minYas:0, maxYas:18, saglam:['norm','xroniki','mehdud'], psix:3, sosial:3},
+    {ad:'Yeniyetmələr üçün dəstək evi', minYas:13, maxYas:18, saglam:['norm','xroniki'], psix:3, sosial:2}
+  ];
+  $('#runPlacement').addEventListener('click', () => {
+    const yas = parseInt($('#aYas').value, 10);
+    if(isNaN(yas)){ alert('Əvvəlcə “Ehtiyacların qiymətləndirilməsi” bölməsində yaşı daxil edin.'); return; }
+    const saglam = $('#aSaglam').value;
+    const psix = parseInt($('#aPsix').value, 10), sosial = parseInt($('#aSosial').value, 10);
+    const res = institutions.map(i => {
+      let score = 0;
+      if(yas >= i.minYas && yas <= i.maxYas) score += 40;
+      if(i.saglam.includes(saglam)) score += 30;
+      score += (i.psix >= psix ? 15 : 15 - (psix - i.psix) * 7);
+      score += (i.sosial >= sosial ? 15 : 15 - (sosial - i.sosial) * 7);
+      return {...i, score: Math.max(0, Math.min(100, score))};
+    }).sort((a,b) => b.score - a.score);
+    const box = $('#placementResults'); box.innerHTML = '';
+    res.forEach((r, idx) => {
+      const d = document.createElement('div'); d.className = 'result';
+      const l = document.createElement('div');
+      const n = document.createElement('b'); n.textContent = (idx === 0 ? '⭐ ' : '') + r.ad;
+      const bar = document.createElement('div'); bar.className = 'bar';
+      const sp = document.createElement('span'); sp.style.width = r.score + '%'; bar.appendChild(sp);
+      l.append(n, bar);
+      const sc = document.createElement('div'); sc.className = 'score'; sc.textContent = r.score + '%';
+      d.append(l, sc); box.appendChild(d);
+    });
+    const note = document.createElement('div'); note.className = 'notice warn';
+    note.textContent = 'Bu nəticə yalnız tövsiyə xarakterlidir. Yekun qərar səlahiyyətli mütəxəssis və müvafiq qurum tərəfindən, uşağın maraqları əsas götürülməklə verilir.';
+    box.appendChild(note);
+  });
+})();
+</script>
+</body>
+</html>
